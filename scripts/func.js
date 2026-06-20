@@ -39,42 +39,33 @@ var createLabel = function(name) {
 };
 
 
-var toScreenPosition = function(obj, camera) {
-    var vector = new THREE.Vector3();
+var toScreenPosition = function(obj3D, camera) {
+	var vector = new THREE.Vector3();
 
-    var widthHalf = 0.5*renderer.context.canvas.width;
-    var heightHalf = 0.5*renderer.context.canvas.height;
+	var widthHalf = 0.5 * renderer.context.canvas.width;
+	var heightHalf = 0.5 * renderer.context.canvas.height;
 
-    obj.updateMatrixWorld();
-    vector.setFromMatrixPosition(obj.matrixWorld);
-    vector.project(camera);
+	obj3D.updateMatrixWorld();
+	vector.setFromMatrixPosition(obj3D.matrixWorld);
 
-    vector.x = ( vector.x * widthHalf ) + widthHalf;
-    vector.y = - ( vector.y * heightHalf ) + heightHalf;
+	// check if behind camera
+	var cameraDirection = new THREE.Vector3();
+	camera.getWorldDirection(cameraDirection);
+	var objectDirection = vector.clone().sub(camera.position);
+	if (cameraDirection.dot(objectDirection) < 0) {
+		return null; // offscreen
+	}
 
-    return {
-        x: vector.x,
-        y: vector.y
-    };
+	vector.project(camera);
 
+	vector.x = (vector.x * widthHalf) + widthHalf;
+	vector.y = -(vector.y * heightHalf) + heightHalf;
+
+	return {
+		x: vector.x,
+		y: vector.y
+	};
 };
-
-// to hide offscreen labels
-// function checkPinVisibility() {
-//     var cameraToEarth = earth.position.clone().sub(camera.position);
-//     var L = Math.sqrt(Math.pow(cameraToEarth.length(), 2) - Math.pow(earthGeometry.parameters.radius, 2));
-
-//     for (var i = 0; i < pins.length; i++) {
-
-//         var cameraToPin = pins[i].position.clone().sub(camera.position);
-
-//         if(cameraToPin.length() > L) {
-//             pins[i].domlabel.style.visibility = "hidden";
-//         } else {
-//             pins[i].domlabel.style.visibility = "visible";
-//         }
-//     }
-// }
 
 var fadeInLabel = function(cycle) {
 	cycle.textLabel.style.opacity = 0;

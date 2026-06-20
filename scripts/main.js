@@ -920,6 +920,12 @@ var audioMixing = function(cycle) {
 
 var updateLabel = function(cycle) {
 	var proj = toScreenPosition(cycle, camera);
+	if (proj === null) {
+		cycle.textLabel.style.visibility = 'hidden'; // offscreen
+		return;
+	} else {
+		cycle.textLabel.style.visibility = 'visible';
+	}
 	cycle.textLabel.style.left = (proj.x - cycle.textLabel.offsetWidth/2) + 'px';
 	cycle.textLabel.style.top = (proj.y - 50) + 'px';
 };
