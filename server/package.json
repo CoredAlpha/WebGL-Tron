@@ -1,0 +1,16 @@
+{
+  "name": "trenchline-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Realtime room/relay server for TrenchLine",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bs58": "^5.0.0",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "tweetnacl": "^1.0.3"
+  }
+}

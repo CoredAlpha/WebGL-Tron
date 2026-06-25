@@ -1,20 +1,115 @@
-## WebGL-Tron
+## TrenchLine
+
+A WebGL light-cycle arena with a Solana wallet gate and online rooms. Connect a
+wallet (your address is your profile) to create or join a race room, or jump
+straight into a free single-player demo.
 
 
 
-#### [Play demo](http://dpren.github.io/tron)
+##### run online multiplayer (recommended):
 
-##### run locally:
+    cd TrenchLine/server
+    npm install
+    npm start            # serves the game + realtime rooms
+    open http://localhost:3000
 
-    cd WebGL-Tron
-    ./webserver.sh
+The Node server (Express + Socket.IO) hosts both the static game and the room
+relay, so everything runs on one origin. Deploy it anywhere that runs Node
+(Render, Railway, Fly, a VPS…) to play across the internet.
+
+##### run the offline demo only:
+
+    python -m http.server 1337
     open http://localhost:1337
+
+(Multiplayer needs the Node server; the static server only serves the demo.)
+
+
+#### Flow
+
+1. **Connect Wallet** — an injected Solana provider (Phantom / Backpack /
+   Solflare) via `@solana/web3.js`. Your wallet address **is your profile**.
+2. **Verify** — the server issues a nonce and the wallet **signs a message**
+   (sign-in); the signature is checked server-side (ed25519 via `tweetnacl`)
+   before you can create or join rooms. No transaction, no gas.
+3. **Lobby** — create a room (get a 4-char code) or join an open room / paste a
+   code. Up to 6 racers per room. A **leaderboard** shows the top racers.
+4. **Race + rounds** — each client simulates its own cycle and broadcasts
+   position / turns / trail / crashes; peers render as live cycles you can
+   crash into. **Last cycle alive wins the round**; a scoreboard shows the
+   result and the next round auto-starts.
+5. **Stats** — each win is **persisted per wallet** in `server/stats.json`.
+
+Controls: **A** / **←** turn left, **D** / **→** turn right, `space` brake,
+`c` change view, `p` pause.
+
+Or pick **Play Demo** for a free, wallet-free single-player game vs AI.
+
+
+#### Notes / config
+
+- Wallet network defaults to `devnet` — change `web3.network` in
+  `scripts/web3.js`.
+- To point the client at a remote server, set `window.TRON_SERVER` before
+  `scripts/net.js` loads.
+- Netcode is *client-authoritative* (each player owns their own cycle's life);
+  it favours simplicity over anti-cheat.
+
+
+#### Deployment — frontend on Vercel, backend on your PC
+
+Vercel serves only the static game; the realtime backend keeps running on your
+PC. Because the Vercel page is HTTPS, the browser can only reach the backend
+over **HTTPS/WSS**, so the PC server must be exposed through a tunnel.
+
+**1. Deploy the frontend (Vercel)**
+- Import the GitHub repo at [vercel.com/new](https://vercel.com/new).
+- No build step (it's static). `vercel.json` + `.vercelignore` are already set
+  so the `server/` folder is *not* shipped.
+
+**2. Run the backend on your PC**
+
+    cd server
+    npm install
+    npm start            # http://localhost:3000
+
+**3. Expose the backend over HTTPS (pick one)**
+
+    # Cloudflare Tunnel (recommended — can be a stable URL)
+    cloudflared tunnel --url http://localhost:3000
+
+    # or ngrok
+    ngrok http 3000
+
+Both print an `https://…` URL.
+
+**4. Point the Vercel site at your backend** — open your site with the tunnel
+URL once (it's saved to `localStorage`):
+
+    https://your-site.vercel.app/?server=https://YOUR-TUNNEL-URL
+
+…or hard-code `DEFAULT_BACKEND` in `scripts/server-config.js` and redeploy.
+
+> Notes: the server already sends `cors: "*"`. Keep the backend (and its tunnel)
+> running while people play. ngrok URLs change each run — Cloudflare named
+> tunnels give a stable URL.
+
+
+#### Layout
+
+| path | role |
+|------|------|
+| `server/` | Express + Socket.IO server: auth, rooms, rounds, stats (**runs on your PC**) |
+| `server/stats.json` | persisted per-wallet win counts (auto-created) |
+| `scripts/server-config.js` | picks the backend URL (local vs tunnel) |
+| `scripts/web3.js` | Solana wallet gate + profile |
+| `scripts/net.js` | sign-message auth, lobby, rounds, multiplayer sync |
+| `css/start-menu.css` | gate / lobby / scoreboard / welcome styling |
+| `vercel.json`, `.vercelignore` | static frontend deploy config |
 
 
 --
 
-### Want to help?
+### Credits
 
-* [![Join the chat at https://gitter.im/dpren/WebGL-Tron](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dpren/WebGL-Tron?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-* [send a pull request](https://github.com/dpren/WebGL-Tron/pulls)
-* email me: [prenticedarren@gmail.com](prenticedarren@gmail.com)
+Forked from [dpren/WebGL-Tron](https://github.com/dpren/WebGL-Tron).

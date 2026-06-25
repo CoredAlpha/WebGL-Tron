@@ -10,17 +10,13 @@ var handleKeyDown = function(e) {
 	}
 
 	switch ( e.keyCode ) {
-		case 70: // left
-		case 68:
-		case 83: 	
-		case 65: 	
+		case 65: // A - turn left
+		case 37: // left arrow
 					player1.turnQueue.push(turnLeft(player1));
 					break;
 
-		case 74: // right
-		case 75:
-		case 76:
-		case 186:   
+		case 68: // D - turn right
+		case 39: // right arrow
 					player1.turnQueue.push(turnRight(player1));
 					break;
 
@@ -51,6 +47,7 @@ var handleKeyDown = function(e) {
 					}
 					break;
 		case 90: // z
+					if (typeof net !== 'undefined' && net.active) break; // rounds control spawning in multiplayer
 					if (player1.respawnAvailable === true) {
 						player1.turnQueue = []; // clear in case turn keys were pressed while dead
 						
@@ -80,11 +77,12 @@ var handleKeyDown = function(e) {
 						var spawn = spawnCheck();
 
 						player1 = spawnCycle(player1, spawn.x, spawn.z, 1, false);
-						
+
 						fixCockpitCam();
 					}
 					break;
 		case 88: // x
+					if (typeof net !== 'undefined' && net.active) break; // no AI in multiplayer
 					(function () {
 						// spawn first available player in list
 						var i = R.findIndex(R.propEq('respawnAvailable', true))(otherPlayers);

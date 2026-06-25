@@ -117,6 +117,10 @@ var spawnCycle = function(cycle, x, z, dir, ai) {
 
 	cycle.respawnAvailable = false;
 
+	if (cycle.playerID === 1) {
+		cycle.isLocal = true; // broadcasts only happen when net.active (multiplayer)
+	}
+
 	cycle.renderList.push(animateCycle(cycle));
 	cycle.renderList.push(fadeInLabel(cycle));
 
@@ -175,6 +179,10 @@ var executeTurn = function(cycle) {
 			var shifted = cycle.turnQueue.shift();
 			var turn = shifted();
 			cycle.lastTurnTime = elapsedTime;
+
+			if (cycle.isLocal && typeof net !== 'undefined' && net.active) {
+				net.sendTurn(cycle);
+			}
 		}
 	}
 };
@@ -197,10 +205,12 @@ var collapseWalls = function(cycle) {
 			scene.remove(cycle.walls);
 			cycle.respawnAvailable = true;
 
-			if (cycle.playerID === 1) {
-				pressZ.style.visibility = "visible";
-			} else {
-				pressX.style.visibility = "visible";
+			if (typeof net === 'undefined' || !net.active) {
+				if (cycle.playerID === 1) {
+					pressZ.style.visibility = "visible";
+				} else {
+					pressX.style.visibility = "visible";
+				}
 			}
 
 
@@ -242,7 +252,11 @@ var collapseWalls = function(cycle) {
 var crash = function(cycle) {
 
 	showInfo = false;
-	
+
+	if (cycle.isLocal && typeof net !== 'undefined' && net.active) {
+		net.sendCrash(cycle);
+	}
+
 	explosions.push(new ExplodeAnimation(cycle));
 
 	cycle.targetSpeed = 0;
@@ -955,7 +969,12 @@ var animate = function() {
 
 	if (paused === false) {
 		activePlayers.forEach( function (cycle) {
-			if (cycle.alive) {
+			if (cycle.remote) {
+				// network-driven peer: no local physics, just replay its state
+				if (typeof updateRemoteCycle === 'function') {
+					updateRemoteCycle(cycle);
+				}
+			} else if (cycle.alive) {
 				executeTurn(cycle);
 				handleBraking(cycle);
 				changeVelocity(cycle);
@@ -971,9 +990,15 @@ var animate = function() {
 				elem();
 			});
 
-			audioMixing(cycle);
+			if (!cycle.remote) {
+				audioMixing(cycle);
+			}
 
 		});
+
+		if (typeof net !== 'undefined' && net.active) {
+			net.tick();
+		}
 
 		explosions.forEach( function(p) {
 			p.update();

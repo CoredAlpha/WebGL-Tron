@@ -71,11 +71,29 @@ var initGame = function() {
 	gauge.speed.max.innerHTML = gauge.speed.maxVal;
 	gauge.brakes.max.innerHTML = gauge.brakes.maxVal;
 
-	document.getElementById('usernameInput').focus();
+	// the welcome screen + its keyboard handler are revealed by the Web3 gate
+	// via enterWelcome(), only after the player connects a wallet or picks
+	// demo mode. See scripts/web3.js
+	animate();
+};
+
+
+// Called by the Web3 gate once the player has connected a wallet or chosen
+// demo mode. Reveals the existing username / instructions screen.
+var enterWelcome = function(suggestedName) {
+
+	var welcome = document.getElementById('welcome-msg');
+	welcome.style.display = '';
+	welcome.style.visibility = 'visible';
+	welcome.style.opacity = 1;
+
+	var inputEl = document.getElementById('usernameInput');
+	if (suggestedName && !inputEl.value) {
+		inputEl.value = suggestedName;
+	}
+	inputEl.focus();
 
 	document.addEventListener('keyup', startGame);
-
-	animate();
 };
 
 window.onload = function() {

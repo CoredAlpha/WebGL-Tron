@@ -1,0 +1,5 @@
+node_modules/
+server/node_modules/
+server/stats.json
+npm-debug.log*
+.DS_Store

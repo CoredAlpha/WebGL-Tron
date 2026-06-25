@@ -1,0 +1,6 @@
+# the backend stays on your PC — don't ship it to Vercel
+server/
+node_modules/
+**/node_modules/
+*.log
+.DS_Store

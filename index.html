@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Tron</title>
+	<title>TrenchLine</title>
+	<link rel="icon" type="image/png" href="public/logo.png"/>
 	<link rel="stylesheet" href="css/flexgrid.css"/>
 	<link rel="stylesheet" href="css/main.css"/>
 	<link rel="stylesheet" href="css/start-menu.css"/>
@@ -10,6 +11,9 @@
 	<link href="fonts/nicefont.woff" />
 	<link href="fonts/fontawesome.woff" />
 	
+	<script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+	<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
 	<script src="scripts/lib/three.min.js"></script>
 	<script src="scripts/lib/ramda.min.js"></script>
 	<script src='scripts/lib/FullScreen.js'></script>
@@ -29,7 +33,117 @@
 
 	<!-- <input id="chatInput" type="text" maxlength="140" /> -->
 
-	<div id="welcome-msg" class="" style="visibility:visible;">
+	<!-- Web3 / Solana gate -->
+	<div id="web3-gate">
+
+		<!-- animated neon grid floor -->
+		<div class="grid-floor"></div>
+		<div class="gate-vignette"></div>
+
+		<div class="web3-box">
+
+			<!-- HUD corner brackets -->
+			<span class="bracket bracket-tl"></span>
+			<span class="bracket bracket-tr"></span>
+			<span class="bracket bracket-bl"></span>
+			<span class="bracket bracket-br"></span>
+
+			<div class="web3-logo">
+				<img class="brand-logo" src="public/logo.png" alt="TrenchLine"/>
+				<h1 class="web3-title" data-text="TRENCHLINE">TRENCHLINE</h1>
+				<div class="web3-sub"><span class="tag-line">// LIGHT&middot;CYCLE&middot;ARENA</span></div>
+				<div class="chain-pill">powered by <b>SOLANA</b></div>
+			</div>
+
+			<div id="web3-status" class="web3-status">connect a Solana wallet to enter the grid</div>
+
+			<div class="web3-buttons">
+				<button id="connectWalletBtn" class="btn web3-btn">
+					<span class="web3-btn-label">CONNECT WALLET</span>
+				</button>
+				<button id="playDemoBtn" class="btn web3-btn web3-btn-demo">
+					<span class="web3-btn-label">PLAY DEMO</span>
+				</button>
+			</div>
+
+			<div id="walletInfo" class="wallet-info"></div>
+
+			<p class="web3-hint">demo mode is free &amp; needs no wallet</p>
+		</div>
+	</div>
+
+	<!-- wallet badge shown in-game -->
+	<div id="wallet-badge" class="wallet-badge"></div>
+
+	<!-- round scoreboard (between rounds) -->
+	<div id="scoreboard"></div>
+
+	<!-- multiplayer lobby -->
+	<div id="lobby">
+		<div class="grid-floor"></div>
+		<div class="gate-vignette"></div>
+
+		<div class="lobby-box">
+			<span class="bracket bracket-tl"></span>
+			<span class="bracket bracket-tr"></span>
+			<span class="bracket bracket-bl"></span>
+			<span class="bracket bracket-br"></span>
+
+			<h2 class="lobby-logo"><img class="lobby-logo-img" src="public/logo.png" alt=""/>TRENCH<b>LINE</b> &middot; LOBBY</h2>
+
+			<div class="lobby-profile">
+				<span class="prof-dot" id="profColor"></span>
+				<div class="prof-text">
+					<div class="prof-addr" id="profAddr">—</div>
+					<div class="prof-label">your profile &middot; <span id="profWins">0 wins</span></div>
+				</div>
+				<span class="net-status" id="netStatus">connecting…</span>
+			</div>
+
+			<!-- room browser -->
+			<div id="lobbyMain" class="lobby-section">
+				<div class="rooms-head"><span>CHOOSE YOUR CYCLE</span></div>
+				<div id="charPicker" class="char-picker"></div>
+
+				<div class="lobby-row">
+					<input id="roomNameInput" class="lobby-input" type="text" placeholder="new room name" maxlength="20" />
+					<button id="createRoomBtn" class="btn web3-btn"><span class="web3-btn-label">CREATE ROOM</span></button>
+				</div>
+				<div class="lobby-row">
+					<input id="joinCodeInput" class="lobby-input" type="text" placeholder="room code" maxlength="6" />
+					<button id="joinCodeBtn" class="btn web3-btn web3-btn-demo"><span class="web3-btn-label">JOIN BY CODE</span></button>
+				</div>
+
+				<div class="rooms-head">
+					<span>OPEN ROOMS</span>
+					<button id="refreshRoomsBtn" class="mini-btn" title="refresh">&#8635;</button>
+				</div>
+				<div id="roomList" class="room-list"></div>
+
+				<div class="rooms-head"><span>TOP RACERS</span></div>
+				<div id="leaderboard" class="leaderboard"></div>
+
+				<button id="lobbyBackBtn" class="mini-btn back-btn">&larr; disconnect</button>
+			</div>
+
+			<!-- inside a room -->
+			<div id="roomView" class="lobby-section hidden">
+				<div class="room-title">ROOM <span id="roomCode"></span></div>
+				<div id="roomPlayers" class="room-players"></div>
+				<div class="room-actions">
+					<button id="startGameBtn" class="btn web3-btn"><span class="web3-btn-label">START RACE</span></button>
+					<div id="waitHost" class="wait-host">waiting for host to start&hellip;</div>
+					<button id="leaveRoomBtn" class="mini-btn back-btn">&larr; leave room</button>
+				</div>
+			</div>
+
+			<p class="web3-hint">share the room code with friends to race together</p>
+		</div>
+	</div>
+
+	<div id="welcome-msg" class="" style="visibility:hidden; display:none;">
+
+		<div class="welcome-brand">TRENCHLINE</div>
 
 		<div id="promptbox" class="main-container">
 
@@ -55,7 +169,7 @@
 			      			<input id="usernameInput" type="text" maxlength="26" />
 			      			<hr id="underline"/>
 			      		</div>
-						<i style="font-size: 8pt;">PRESS ENTER TO BEGIN</i>
+						<i class="enter-hint" style="font-size: 8pt;">PRESS ENTER TO BEGIN</i>
 
 			    	</div>
 			    </div>
@@ -67,12 +181,12 @@
 			    	<div class="vertical-align vertical-align--middle">
 						
 						<div class="row center margin">
-							<h3 class="col col-span-6 right"><b>S</b>&nbsp;←&nbsp;<b>D</b>&nbsp;←&nbsp;<b>F</b>&nbsp;← turn left &nbsp; &nbsp;</h3>
-							
-							<h3 class="col col-span-6 left">&nbsp; &nbsp; turn right →&nbsp;<b>J</b>&nbsp;→&nbsp;<b>K</b>&nbsp;→&nbsp;<b>L</b></h3>
+							<h3 class="col col-span-6 right"><b>A</b>&nbsp;← turn left &nbsp; &nbsp;</h3>
+
+							<h3 class="col col-span-6 left">&nbsp; &nbsp; turn right →&nbsp;<b>D</b></h3>
 						</div>
 						<br>
-						<h5 class="row center margin">duplicate turn keys are bound for faster turns, pressing D+F at once performs a quick 180º</h5>
+						<h5 class="row center margin">arrow keys ← → also steer</h5>
 						<br>
 						<h3 class="row center"><b>space</b>&nbsp;- brake </h3>
 						<br>
@@ -166,5 +280,8 @@
 	<script src="scripts/main.js"></script>
 	<script src="scripts/keyboard.js"></script>
 	<script src="scripts/welcome.js"></script>
+	<script src="scripts/web3.js"></script>
+	<script src="scripts/server-config.js"></script>
+	<script src="scripts/net.js"></script>
 </body>
 </html>

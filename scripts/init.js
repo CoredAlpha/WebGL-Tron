@@ -16,7 +16,10 @@ var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeig
 	camera.position.set(-550, 250, 100);
 
 
-var cameraOrbit = new THREE.OrbitControls(camera);
+// scope OrbitControls to the canvas — passing no element makes it bind to
+// `document` and preventDefault() on mousedown, which blocks focusing the
+// lobby's text inputs (e.g. the room-code field).
+var cameraOrbit = new THREE.OrbitControls(camera, renderer.domElement);
 	cameraOrbit.maxDistance = 400;
 
 
