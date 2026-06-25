@@ -154,6 +154,37 @@ var initWeb3Gate = function() {
 
 	if (connectBtn) connectBtn.addEventListener('click', connectWallet);
 	if (demoBtn) demoBtn.addEventListener('click', playDemo);
+
+	// "copy CA" buttons (gate + lobby)
+	var copyCA = function(btn) {
+		var ca = btn.getAttribute('data-ca');
+		var done = function () {
+			btn.classList.add('copied');
+			var hint = btn.querySelector('.ca-hint');
+			var prev = hint ? hint.innerHTML : null;
+			if (hint) hint.innerHTML = 'copied ✔';
+			setTimeout(function () {
+				btn.classList.remove('copied');
+				if (hint && prev !== null) hint.innerHTML = prev;
+			}, 1500);
+		};
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(ca).then(done).catch(function () { fallbackCopy(ca); done(); });
+		} else {
+			fallbackCopy(ca); done();
+		}
+	};
+	var fallbackCopy = function(text) {
+		var t = document.createElement('textarea');
+		t.value = text; t.style.position = 'fixed'; t.style.opacity = '0';
+		document.body.appendChild(t); t.focus(); t.select();
+		try { document.execCommand('copy'); } catch (e) {}
+		document.body.removeChild(t);
+	};
+	var caButtons = document.querySelectorAll('.ca-copy');
+	for (var i = 0; i < caButtons.length; i++) {
+		(function (b) { b.addEventListener('click', function () { copyCA(b); }); })(caButtons[i]);
+	}
 };
 
 if (document.readyState === 'loading') {
