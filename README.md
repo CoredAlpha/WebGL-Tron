@@ -62,10 +62,17 @@ Vercel serves only the static game; the realtime backend keeps running on your
 PC. Because the Vercel page is HTTPS, the browser can only reach the backend
 over **HTTPS/WSS**, so the PC server must be exposed through a tunnel.
 
+This project is wired for: **frontend at `trenchline.fun` (Vercel)**, **backend
+on the PC** exposed at **`api.trenchline.fun`** via a Cloudflare named tunnel.
+`scripts/server-config.js` already points production at `https://api.trenchline.fun`,
+so the deployed site connects with no manual input.
+
 **1. Deploy the frontend (Vercel)**
 - Import the GitHub repo at [vercel.com/new](https://vercel.com/new).
-- No build step (it's static). `vercel.json` + `.vercelignore` are already set
-  so the `server/` folder is *not* shipped.
+- No build step (it's static); `vercel.json` + `.vercelignore` keep `server/`
+  out of the deploy.
+- Add the custom domain `trenchline.fun` in Vercel → Settings → Domains, and add
+  the DNS records it shows in Cloudflare.
 
 **2. Run the backend on your PC**
 
@@ -73,26 +80,23 @@ over **HTTPS/WSS**, so the PC server must be exposed through a tunnel.
     npm install
     npm start            # http://localhost:3000
 
-**3. Expose the backend over HTTPS (pick one)**
+**3. Cloudflare named tunnel (stable `api.trenchline.fun`)**
+- Add `trenchline.fun` to Cloudflare (Free plan) and switch the registrar's
+  nameservers to Cloudflare's; wait until the zone is **Active**.
+- Zero Trust → **Networks → Tunnels → Create tunnel** → *Cloudflared* → name it
+  `trenchline`. Copy the install command and run it on the PC (auto-starts as a
+  Windows service):
 
-    # Cloudflare Tunnel (recommended — can be a stable URL)
-    cloudflared tunnel --url http://localhost:3000
+      cloudflared service install <TOKEN>
 
-    # or ngrok
-    ngrok http 3000
+- In the tunnel, add a **Public Hostname**: `api` . `trenchline.fun` →
+  service `HTTP` → `localhost:3000`.
 
-Both print an `https://…` URL.
+Now `https://api.trenchline.fun` proxies to the backend, and the Vercel site
+connects automatically.
 
-**4. Point the Vercel site at your backend** — open your site with the tunnel
-URL once (it's saved to `localStorage`):
-
-    https://your-site.vercel.app/?server=https://YOUR-TUNNEL-URL
-
-…or hard-code `DEFAULT_BACKEND` in `scripts/server-config.js` and redeploy.
-
-> Notes: the server already sends `cors: "*"`. Keep the backend (and its tunnel)
-> running while people play. ngrok URLs change each run — Cloudflare named
-> tunnels give a stable URL.
+> The server sends `cors: "*"`. Keep the PC backend (`npm start`) running while
+> people play — the tunnel only bridges to it. Demo mode works without it.
 
 
 #### Layout

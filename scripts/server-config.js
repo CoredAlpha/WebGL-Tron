@@ -18,8 +18,8 @@
 
 (function () {
 
-	// EDIT this to your stable tunnel URL if you don't want to pass ?server= each time.
-	var DEFAULT_BACKEND = "https://YOUR-BACKEND-URL.trycloudflare.com";
+	// Stable backend behind a Cloudflare named tunnel (runs on the PC).
+	var DEFAULT_BACKEND = "https://api.trenchline.fun";
 
 	if (window.TRON_SERVER) return; // explicit override wins
 
