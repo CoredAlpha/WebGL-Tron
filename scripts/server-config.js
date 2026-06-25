@@ -18,8 +18,8 @@
 
 (function () {
 
-	// Stable backend behind a Cloudflare named tunnel (runs on the PC).
-	var DEFAULT_BACKEND = "https://api.trenchline.fun";
+	// Temporary backend behind a quick Cloudflare tunnel (runs on the PC).
+	var DEFAULT_BACKEND = "https://daughter-lately-pittsburgh-mason.trycloudflare.com";
 
 	if (window.TRON_SERVER) return; // explicit override wins
 
