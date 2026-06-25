@@ -264,6 +264,49 @@
 	letter-spacing: 2px;
 }
 
+/* social / buy buttons */
+.social-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .6em;
+	justify-content: center;
+	align-items: center;
+	margin-top: 1.5em;
+}
+.social-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: .45em;
+	padding: .55em .95em;
+	font-family: nicefont, sans-serif;
+	font-size: .78em;
+	letter-spacing: 2px;
+	color: var(--tron-cyan);
+	border: 1px solid rgba(66,172,237, .45);
+	border-radius: 6px;
+	background: rgba(66,172,237, .06);
+	cursor: pointer;
+	transition: .18s ease;
+}
+.social-btn svg { width: 15px; height: 15px; fill: currentColor; }
+.social-btn:hover {
+	background: rgba(66,172,237, .18);
+	box-shadow: 0 0 14px rgba(66,172,237, .4);
+	transform: translateY(-1px);
+}
+.social-btn.buy {
+	color: var(--ink);
+	font-weight: 700;
+	border-color: var(--sol-green);
+	background: var(--sol-green);
+	text-shadow: none;
+	box-shadow: 0 0 16px rgba(20,241,149, .45);
+}
+.social-btn.buy:hover {
+	background: #2effad;
+	box-shadow: 0 0 24px rgba(20,241,149, .7);
+}
+
 
 /* -----------------------------------------------------------------------------
    in-game wallet badge
